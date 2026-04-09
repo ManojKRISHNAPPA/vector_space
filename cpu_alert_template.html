@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server CPU Alert</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .alert-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            margin-top: 12px;
+        }
+        
+        .alert-badge.critical {
+            background-color: #ff4757;
+            color: white;
+        }
+        
+        .alert-badge.warning {
+            background-color: #ffa502;
+            color: white;
+        }
+        
+        .alert-badge.normal {
+            background-color: #2ed573;
+            color: white;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .info-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 24px;
+            border-radius: 4px;
+        }
+        
+        .info-box p {
+            margin: 6px 0;
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .info-box strong {
+            color: #333;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .metric-card.memory {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .metric-card.disk {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: white;
+            border-radius: 4px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+        
+        .recommendation-box {
+            background-color: #e8f5e9;
+            padding: 16px;
+            border-left: 4px solid #4caf50;
+            margin-bottom: 24px;
+            border-radius: 4px;
+        }
+        
+        .recommendation-box h3 {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .recommendation-box ul {
+            margin-left: 20px;
+            color: #388e3c;
+            font-size: 13px;
+        }
+        
+        .recommendation-box li {
+            margin-bottom: 6px;
+        }
+        
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .timestamp {
+            color: #999;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        
+        .alert-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="alert-icon">⚠️</div>
+            <h1>Server Performance Alert</h1>
+            <p>Hostname: production-server-01</p>
+            <span class="alert-badge critical">
+                CRITICAL - 92.3%
+            </span>
+        </div>
+        
+        <div class="content">
+            <div class="info-box">
+                <p><strong>Alert Level:</strong> CRITICAL</p>
+                <p><strong>Alert Time:</strong> 2024-01-15 14:35:22</p>
+                <p><strong>Threshold:</strong> 80%</p>
+                <p><strong>Current Usage:</strong> 92.3%</p>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">CPU Usage</div>
+                    <div class="metric-value">92.3%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 92.3%"></div>
+                    </div>
+                </div>
+                
+                <div class="metric-card memory">
+                    <div class="metric-label">Memory Usage</div>
+                    <div class="metric-value">78.5%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 78.5%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <p><strong>Memory:</strong> 31.4 GB / 40 GB</p>
+                <p><strong>CPU Cores:</strong> 16</p>
+                <p><strong>Available RAM:</strong> 8.6 GB</p>
+            </div>
+            
+            <div class="section-title">System Information</div>
+            <div class="info-box">
+                <p><strong>OS:</strong> Ubuntu 22.04 LTS</p>
+                <p><strong>Kernel:</strong> 5.15.0-86-generic</p>
+                <p><strong>Uptime:</strong> 45 days, 3 hours</p>
+                <p><strong>Load Average:</strong> 8.42, 7.15, 6.89</p>
+            </div>
+            
+            <div class="section-title">Top CPU Consuming Processes</div>
+            <div style="background-color: #f8f9fa; border-radius: 6px; overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background-color: #e0e0e0;">
+                            <th style="padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ccc;">Process Name</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ccc;">PID</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ccc;">CPU %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 10px 12px;">python-app</td>
+                            <td style="padding: 10px 12px;">4521</td>
+                            <td style="padding: 10px 12px;">34.2%</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 10px 12px;">mysql</td>
+                            <td style="padding: 10px 12px;">2156</td>
+                            <td style="padding: 10px 12px;">28.1%</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 10px 12px;">nginx</td>
+                            <td style="padding: 10px 12px;">1892</td>
+                            <td style="padding: 10px 12px;">18.5%</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 10px 12px;">docker</td>
+                            <td style="padding: 10px 12px;">1245</td>
+                            <td style="padding: 10px 12px;">8.2%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 12px;">systemd</td>
+                            <td style="padding: 10px 12px;">1</td>
+                            <td style="padding: 10px 12px;">3.3%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="recommendation-box">
+                <h3>Recommended Actions:</h3>
+                <ul>
+                    <li>Investigate python-app process (PID 4521) - consuming 34.2% CPU</li>
+                    <li>Check MySQL queries for long-running operations</li>
+                    <li>Consider scaling up resources or load balancing</li>
+                    <li>Review application logs for errors or warnings</li>
+                    <li>Monitor memory usage closely to prevent OOM kills</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p style="margin-bottom: 8px;">This is an automated alert from your monitoring system</p>
+            <p class="timestamp">Generated: 2024-01-15 14:35:22 UTC</p>
+            <p class="timestamp">Alert ID: ALERT-20240115-143522-HOST01</p>
+        </div>
+    </div>
+</body>
+</html>
