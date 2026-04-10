@@ -10,8 +10,42 @@ if "authenticated" not in st.session_state:
 if "current_user" not in st.session_state:
     st.session_state["current_user"] = None
 
-if "mode" not in st.session_state:
-    st.session_state["mode"] = "login"
+if "topic" not in st.session_state:
+    st.session_state["topic"] = "DevOps"
+
+
+ROYAL_CSS = """
+<style>
+body, .reportview-container, .main {
+    background: linear-gradient(135deg, #0b1837 0%, #2b1c50 55%, #363b73 100%);
+    color: #f4f0ff;
+}
+.css-1d391kg .css-18ni7ap {background-color:#141f47;}
+.stApp > main {
+    color: #f4f0ff;
+}
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0f183b 0%, #221f4a 100%);
+}
+.stButton>button {
+    background-color: #6f56a5;
+    color: #f8f4ff;
+    border: 1px solid #cab9ff;
+}
+.stButton>button:hover {
+    background-color: #8b6fc6;
+}
+.stTextInput>div>div>input,
+.stTextInput>div>div>textarea,
+.stNumberInput>div>div>input {
+    background: #152447;
+    color: #f4f0ff;
+}
+.stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4 {
+    color: #f8f4ff;
+}
+</style>
+"""
 
 
 def register_user(username: str, password: str):
@@ -45,9 +79,91 @@ def logout_user():
     st.experimental_rerun()
 
 
+def topic_summary(topic: str) -> None:
+    if topic == "DevOps":
+        st.subheader("Why DevOps Matters")
+        st.write(
+            "DevOps is the practice of combining development and operations to ship software faster, "
+            "reduce failures, and improve reliability. It emphasizes automation, collaboration, and continuous improvement."
+        )
+    elif topic == "AI":
+        st.subheader("Why AI Matters")
+        st.write(
+            "Artificial Intelligence drives smarter systems, predictive automation, and better decision-making. "
+            "AI powers everything from code generation to observability and user personalization."
+        )
+    elif topic == "MCP":
+        st.subheader("Why MCP Matters")
+        st.write(
+            "MCP stands for Model Context Protocol — a way to standardize how LLMs and systems share conversation context, tool links, and actionable metadata. "
+            "It helps build more reliable AI assistants across teams and platforms."
+        )
+    st.write("Login to unlock the full article and rich topic insights.")
+
+
+def show_topic_content(topic: str):
+    if topic == "DevOps":
+        st.header("DevOps: Reliable Delivery and Automation")
+        st.write(
+            "DevOps brings developers and operations together to deliver software more rapidly while maintaining stability. "
+            "Key pillars include continuous integration, continuous delivery, infrastructure as code, and monitoring."
+        )
+        st.markdown("**Main focus areas:**")
+        st.write(
+            "- Pipeline automation and quality checks.\n"
+            "- Infrastructure provisioning and configuration as code.\n"
+            "- Release strategies like blue/green and canary deployments.\n"
+            "- Observability with metrics, logging, and alerting.\n"
+            "- Feedback loops from production to engineering."
+        )
+        st.markdown("**Why this matters:**")
+        st.write(
+            "DevOps reduces silos, accelerates releases, and helps teams recover faster from incidents. "
+            "In a royal-themed platform, this means stable systems that feel polished, performant, and secure."
+        )
+    elif topic == "AI":
+        st.header("AI: Smarter Systems and Predictive Automation")
+        st.write(
+            "AI helps teams build intelligent features like code recommendations, anomaly detection, and automated runbooks. "
+            "It also enhances decision-making across engineering and operations."
+        )
+        st.markdown("**AI in modern platforms:**")
+        st.write(
+            "- Natural language processing for requirements, docs, and chatbots.\n"
+            "- Predictive analytics for incident detection and capacity planning.\n"
+            "- AI-assisted testing, code quality analysis, and model-driven automation.\n"
+            "- Personalization for developers and stakeholders."
+        )
+        st.markdown("**AI in the royal theme:**")
+        st.write(
+            "Imagine a platform that not only looks premium, but also acts intelligently—anticipating needs, helping triage problems, and guiding decisions."
+        )
+    else:
+        st.header("MCP: Model Context Protocol")
+        st.write(
+            "MCP standardizes the way applications and models exchange context, tools, and structured data. "
+            "It helps systems coordinate a workflow where AI models can use external functions, maintain state, and interact safely."
+        )
+        st.markdown("**MCP capabilities:**")
+        st.write(
+            "- Shared context across multi-step workflows.\n"
+            "- Function and tool invocation metadata.\n"
+            "- Structured output formats for predictable integrations.\n"
+            "- Better traceability and guardrails for AI assistant behavior."
+        )
+        st.markdown("**Why MCP is valuable:**")
+        st.write(
+            "For projects involving AI and DevOps, MCP enables more robust automation by making the model aware of the workflow and the available tools. "
+            "This leads to safer, more consistent results."
+        )
+
+
 def show_login():
-    st.title("AI DevOps Blog Portal")
-    st.write("Create an account or log in to read the AI DevOps blog content.")
+    st.markdown("# ✨ AI DevOps Royal Portal")
+    st.markdown(
+        "Welcome to the royal-themed Streamlit portal. Register or login to read the full premium content for each selected topic."
+    )
+    st.markdown("---")
 
     tab_login, tab_register = st.tabs(["Login", "Register"])
 
@@ -66,93 +182,46 @@ def show_login():
             if register_username.strip() == "" or register_password.strip() == "":
                 st.error("Please enter a valid username and password.")
             else:
-                if register_user(register_username.strip(), register_password):
-                    st.session_state["mode"] = "login"
+                register_user(register_username.strip(), register_password)
+
+    st.markdown("---")
+    topic_summary(st.session_state["topic"])
 
 
 def show_blog():
-    st.title("AI DevOps Blog")
-    st.write(
-        "Welcome to the AI DevOps blog experience. This page covers how AI and DevOps come together to accelerate modern software delivery."
-    )
-
+    st.markdown("# 👑 Premium Topic Reader")
+    if st.session_state["current_user"]:
+        st.write(f"Logged in as **{st.session_state['current_user']}** — exploring **{st.session_state['topic']}**")
     st.markdown("---")
-    st.header("What is AI DevOps?")
-    st.write(
-        "AI DevOps combines artificial intelligence techniques with DevOps practices to improve automation, observability, and software delivery. "
-        "It aims to make pipelines smarter, reduce manual effort, and enable predictive operations."
-    )
-
-    st.subheader("Key Benefits")
-    st.write(
-        "- Faster release cycles through intelligent automation.\n"
-        "- Better reliability by using AI-driven monitoring and anomaly detection.\n"
-        "- Smarter incident response based on predictive analytics.\n"
-        "- Continuous learning from production data to improve models and delivery processes."
-    )
-
-    st.markdown("---")
-    st.header("AI in the DevOps Lifecycle")
-    st.write(
-        "AI is used in many stages of DevOps, including requirements planning, code quality checks, build and test automation, deployment, and observability." 
-        "Here are the main areas where AI makes a difference:"
-    )
-    st.write(
-        "1. Planning and backlog prioritization using natural language understanding.\n"
-        "2. Automated code review and vulnerability scanning with machine learning.\n"
-        "3. Intelligent testing and test-case generation.\n"
-        "4. Deployment optimization with predictive rollout and canary analysis.\n"
-        "5. Observability with anomaly detection, root-cause analysis, and feedback loops."
-    )
-
-    st.markdown("---")
-    st.header("Sample AI DevOps Workflow")
-    st.write(
-        "A typical AI DevOps workflow combines data from source control, CI/CD, runtime telemetry, and incident response. "
-        "An AI layer analyzes this data to recommend improvements, detect failures early, and automate repetitive tasks."
-    )
-    st.write(
-        "**Example workflow:**\n"
-        "- Developers push code to Git.\n"
-        "- CI pipeline runs static analysis, tests, and builds.\n"
-        "- AI models inspect test results and suggest risk-based deployments.\n"
-        "- Deployment is automatically adjusted using canary or blue/green strategies.\n"
-        "- Monitoring systems detect anomalies and trigger AI-powered alerts.\n"
-        "- Post-incident analysis provides insights for continuous improvement."
-    )
-
-    st.markdown("---")
-    st.header("Practical AI DevOps Use Cases")
-    st.write(
-        "AI DevOps is used in enterprises to improve software quality, reduce downtime, and accelerate innovation. "
-        "Common use cases include:")
-    st.write(
-        "- Predictive maintenance for infrastructure and services.\n"
-        "- Automated root cause analysis and remediation.\n"
-        "- Intelligent release gating based on risk and quality signals.\n"
-        "- Dynamic optimization of resource provisioning in cloud environments.\n"
-    )
-
-    st.markdown("---")
-    st.header("Why AI DevOps Matters")
-    st.write(
-        "AI DevOps lets teams move beyond manual operations to a more adaptive, data-driven way of building and running software. "
-        "This leads to higher efficiency, better user experiences, and faster time-to-market."
-    )
-
-    st.info("Blog content is visible only after logging in. Use the sidebar to logout or switch accounts.")
+    show_topic_content(st.session_state["topic"])
+    st.info("Use the sidebar to switch between DevOps, AI, and MCP topics.")
 
 
 def main():
-    st.set_page_config(page_title="AI DevOps Blog", layout="centered")
+    st.set_page_config(page_title="AI DevOps Royal Portal", layout="wide")
+    st.markdown(ROYAL_CSS, unsafe_allow_html=True)
 
-    st.sidebar.title("Account")
+    st.sidebar.markdown("## 🌟 Select Topic")
+    topic_choice = st.sidebar.radio(
+        "Choose a topic",
+        ["DevOps", "AI", "MCP"],
+        index=["DevOps", "AI", "MCP"].index(st.session_state["topic"])
+    )
+    st.session_state["topic"] = topic_choice
+
+    st.sidebar.markdown("---")
     if st.session_state["authenticated"]:
-        st.sidebar.write(f"Logged in as **{st.session_state['current_user']}**")
+        st.sidebar.success(f"Logged in as {st.session_state['current_user']}")
         if st.sidebar.button("Logout"):
             logout_user()
     else:
-        st.sidebar.write("Please log in or register to view the blog.")
+        st.sidebar.info("Log in to view the full premium content.")
+
+    st.sidebar.markdown("---")
+    st.sidebar.markdown(
+        "<div style='color:#f4f0ff;'>Choose a topic here and the main page will update with content for that category.</div>",
+        unsafe_allow_html=True,
+    )
 
     if st.session_state["authenticated"]:
         show_blog()
