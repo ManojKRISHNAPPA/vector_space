@@ -2,3 +2,5 @@
 hostname
 date
 echo "hiii"
+
+echo "test"
