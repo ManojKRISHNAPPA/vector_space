@@ -1,7 +1,8 @@
 pipeline {
-    agent any 
+    agent any
 
     stages{
+
         stage('my first stage'){
             steps{
                 sh '''
@@ -10,7 +11,7 @@ pipeline {
                 '''
             }
         }
-        
+
         stage('This is my second stage'){
             steps{
                 sh '''
@@ -29,12 +30,39 @@ pipeline {
             }
         }
 
+        // ⭐ Create Python Virtual Environment
+        stage('Setup Python Environment'){
+            steps{
+                sh '''
+                    cd 01-firstjenkinsfile
+
+                    python3 -m venv venv
+
+                    . venv/bin/activate
+
+                    pip install --upgrade pip
+                    pip install psutil
+                '''
+            }
+        }
+
+        // ⭐ Run Monitoring Script
         stage('python stage'){
             steps{
                 sh '''
-                    cd 01-firstjenkinsfile/
-                    python3 test.py
+                    cd 01-firstjenkinsfile
+
+                    . venv/bin/activate
+
+                    python test.py
                 '''
+            }
+        }
+
+        // ⭐ Publish Dashboard
+        stage('Publish status report'){
+            steps{
+                archiveArtifacts artifacts: '01-firstjenkinsfile/status_report.html,01-firstjenkinsfile/status_history.json', fingerprint: true
             }
         }
     }
