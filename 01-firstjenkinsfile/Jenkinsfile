@@ -28,7 +28,7 @@ pipeline {
 
                     pip install --upgrade pip
                     pip install psutil
-
+                    pip install flask psutil
                     echo "Installed packages:"
                     pip list
                 '''

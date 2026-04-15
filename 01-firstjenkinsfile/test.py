@@ -1,129 +1,230 @@
-#!/usr/bin/env python3
-
-import os
-import json
+from flask import Flask, jsonify, Response
 import psutil
+import threading
 import socket
-from datetime import datetime
+import platform
+import datetime
 
-print("Current Working Directory:", os.getcwd())
-print("Script Location:", os.path.abspath(__file__))
+app = Flask(__name__)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# =========================
+# SYSTEM METRICS API
+# =========================
+@app.route("/metrics")
+def metrics():
 
-REPORT_FILE = os.path.join(BASE_DIR, "status_report.html")
-HISTORY_FILE = os.path.join(BASE_DIR, "status_history.json")
+    cpu = psutil.cpu_percent(interval=1)
+    memory = psutil.virtual_memory()
+    disk = psutil.disk_usage("/")
+    net = psutil.net_io_counters()
 
-
-def get_metrics():
-    return {
-        "time": datetime.utcnow().strftime("%H:%M:%S"),
-        "cpu": psutil.cpu_percent(),
-        "memory": psutil.virtual_memory().percent,
-        "disk": psutil.disk_usage("/").percent,
-        "host": socket.gethostname(),
-        "build": os.getenv("BUILD_NUMBER", "local"),
-        "job": os.getenv("JOB_NAME", "dev")
-    }
-
-
-def load_history():
-    if os.path.exists(HISTORY_FILE):
-        return json.load(open(HISTORY_FILE))
-    return []
-
-
-def save_history(data):
-    json.dump(data[-200:], open(HISTORY_FILE, "w"), indent=2)
+    return jsonify({
+        "time": datetime.datetime.now().strftime("%H:%M:%S"),
+        "hostname": socket.gethostname(),
+        "os": platform.system(),
+        "cpu": cpu,
+        "memory": memory.percent,
+        "disk": disk.percent,
+        "threads": threading.active_count(),
+        "processes": len(psutil.pids()),
+        "upload": net.bytes_sent // (1024*1024),
+        "download": net.bytes_recv // (1024*1024)
+    })
 
 
-def generate_dashboard(history):
+# =========================
+# DASHBOARD UI
+# =========================
+@app.route("/")
+def dashboard():
 
-    labels = [x["time"] for x in history]
-    cpu = [x["cpu"] for x in history]
-    mem = [x["memory"] for x in history]
-    disk = [x["disk"] for x in history]
-
-    html = f"""
+    html = """
+<!DOCTYPE html>
 <html>
 <head>
-<title>Jenkins Live Dashboard</title>
+<title>🚀 Jenkins Production Monitoring</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<meta http-equiv="refresh" content="10">
 
 <style>
-body {{
-background:#0f172a;
+
+body{
+background:#020617;
 color:white;
 font-family:Arial;
-padding:30px;
-}}
+margin:0;
+}
 
-.card {{
-background:#111827;
+header{
+background:#0f172a;
+padding:15px;
+text-align:center;
+font-size:24px;
+font-weight:bold;
+color:#38bdf8;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
+padding:20px;
+}
+
+.card{
+background:#0f172a;
 padding:20px;
 border-radius:12px;
-margin-bottom:20px;
-}}
+box-shadow:0 0 10px #000;
+}
 
-h1 {{color:#38bdf8}}
+h3{margin-top:0;}
+
+canvas{height:220px;}
+
+.info{
+padding:15px;
+text-align:center;
+font-size:18px;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>🚀 Jenkins Live Monitoring Dashboard</h1>
+<header>🚀 Jenkins Live System Monitoring Dashboard</header>
+
+<div class="info" id="sysinfo">Loading...</div>
+
+<div class="grid">
 
 <div class="card">
-Host: {history[-1]["host"]} |
-Job: {history[-1]["job"]} |
-Build: {history[-1]["build"]}
+<h3>CPU Usage</h3>
+<canvas id="cpu"></canvas>
 </div>
 
-<canvas id="cpu"></canvas>
-<canvas id="mem"></canvas>
+<div class="card">
+<h3>Memory Usage</h3>
+<canvas id="memory"></canvas>
+</div>
+
+<div class="card">
+<h3>Disk Usage</h3>
 <canvas id="disk"></canvas>
+</div>
+
+<div class="card">
+<h3>Active Threads</h3>
+<canvas id="threads"></canvas>
+</div>
+
+<div class="card">
+<h3>Network Traffic</h3>
+<canvas id="network"></canvas>
+</div>
+
+<div class="card">
+<h3>Running Processes</h3>
+<canvas id="process"></canvas>
+</div>
+
+</div>
 
 <script>
 
-const labels = {labels};
-
-new Chart(document.getElementById("cpu"), {{
+const cpuChart=new Chart(document.getElementById("cpu"),{
 type:"line",
-data:{{labels:labels,datasets:[{{label:"CPU %",data:{cpu}}}]}}
-}});
+data:{labels:[],datasets:[{label:"CPU %",data:[]}]}
+});
 
-new Chart(document.getElementById("mem"), {{
-type:"line",
-data:{{labels:labels,datasets:[{{label:"Memory %",data:{mem}}}]}}
-}});
+const memoryChart=new Chart(document.getElementById("memory"),{
+type:"bar",
+data:{labels:["Memory"],datasets:[{data:[0]}]}
+});
 
-new Chart(document.getElementById("disk"), {{
+const diskChart=new Chart(document.getElementById("disk"),{
+type:"doughnut",
+data:{labels:["Used","Free"],datasets:[{data:[0,100]}]}
+});
+
+const threadChart=new Chart(document.getElementById("threads"),{
+type:"bar",
+data:{labels:["Threads"],datasets:[{data:[0]}]}
+});
+
+const networkChart=new Chart(document.getElementById("network"),{
 type:"line",
-data:{{labels:labels,datasets:[{{label:"Disk %",data:{disk}}}]}}
-}});
+data:{labels:[],datasets:[
+{label:"Upload(MB)"},
+{label:"Download(MB)"}
+]}
+});
+
+const processChart=new Chart(document.getElementById("process"),{
+type:"pie",
+data:{labels:["Processes"],datasets:[{data:[0]}]}
+});
+
+async function fetchMetrics(){
+
+let res=await fetch("/metrics");
+let d=await res.json();
+
+document.getElementById("sysinfo").innerHTML=
+`Host: ${d.hostname} | OS: ${d.os} | Time: ${d.time}`;
+
+/* CPU */
+cpuChart.data.labels.push("");
+cpuChart.data.datasets[0].data.push(d.cpu);
+if(cpuChart.data.labels.length>15){
+cpuChart.data.labels.shift();
+cpuChart.data.datasets[0].data.shift();
+}
+cpuChart.update();
+
+/* Memory */
+memoryChart.data.datasets[0].data=[d.memory];
+memoryChart.update();
+
+/* Disk */
+diskChart.data.datasets[0].data=[d.disk,100-d.disk];
+diskChart.update();
+
+/* Threads */
+threadChart.data.datasets[0].data=[d.threads];
+threadChart.update();
+
+/* Network */
+networkChart.data.labels.push("");
+networkChart.data.datasets[0].data.push(d.upload);
+networkChart.data.datasets[1].data.push(d.download);
+
+if(networkChart.data.labels.length>15){
+networkChart.data.labels.shift();
+networkChart.data.datasets[0].data.shift();
+networkChart.data.datasets[1].data.shift();
+}
+networkChart.update();
+
+/* Processes */
+processChart.data.datasets[0].data=[d.processes];
+processChart.update();
+
+}
+
+setInterval(fetchMetrics,2000);
 
 </script>
 
 </body>
 </html>
 """
-
-    with open(REPORT_FILE, "w", encoding="utf-8") as f:
-        f.write(html)
-
-    print("Dashboard generated:", REPORT_FILE)
+    return Response(html, mimetype="text/html")
 
 
-def main():
-    history = load_history()
-
-    metrics = get_metrics()
-    history.append(metrics)
-
-    save_history(history)
-    generate_dashboard(history)
-
-
+# =========================
+# RUN SERVER
+# =========================
 if __name__ == "__main__":
-    main()
+    app.run(host="0.0.0.0", port=5000)
