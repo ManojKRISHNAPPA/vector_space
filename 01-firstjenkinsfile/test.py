@@ -6,9 +6,13 @@ import psutil
 import socket
 from datetime import datetime
 
-DATA_FILE = "history.json"
-REPORT_DIR = "reports"
-os.makedirs(REPORT_DIR, exist_ok=True)
+print("Current Working Directory:", os.getcwd())
+print("Script Location:", os.path.abspath(__file__))
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+REPORT_FILE = os.path.join(BASE_DIR, "status_report.html")
+HISTORY_FILE = os.path.join(BASE_DIR, "status_history.json")
 
 
 def get_metrics():
@@ -24,13 +28,13 @@ def get_metrics():
 
 
 def load_history():
-    if os.path.exists(DATA_FILE):
-        return json.load(open(DATA_FILE))
+    if os.path.exists(HISTORY_FILE):
+        return json.load(open(HISTORY_FILE))
     return []
 
 
 def save_history(data):
-    json.dump(data[-200:], open(DATA_FILE, "w"), indent=2)
+    json.dump(data[-200:], open(HISTORY_FILE, "w"), indent=2)
 
 
 def generate_dashboard(history):
@@ -44,9 +48,7 @@ def generate_dashboard(history):
 <html>
 <head>
 <title>Jenkins Live Dashboard</title>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <meta http-equiv="refresh" content="10">
 
 <style>
@@ -88,23 +90,17 @@ const labels = {labels};
 
 new Chart(document.getElementById("cpu"), {{
 type:"line",
-data:{{labels:labels,
-datasets:[{{label:"CPU %",
-data:{cpu}}}]}}
+data:{{labels:labels,datasets:[{{label:"CPU %",data:{cpu}}}]}}
 }});
 
 new Chart(document.getElementById("mem"), {{
 type:"line",
-data:{{labels:labels,
-datasets:[{{label:"Memory %",
-data:{mem}}}]}}
+data:{{labels:labels,datasets:[{{label:"Memory %",data:{mem}}}]}}
 }});
 
 new Chart(document.getElementById("disk"), {{
 type:"line",
-data:{{labels:labels,
-datasets:[{{label:"Disk %",
-data:{disk}}}]}}
+data:{{labels:labels,datasets:[{{label:"Disk %",data:{disk}}}]}}
 }});
 
 </script>
@@ -113,7 +109,10 @@ data:{disk}}}]}}
 </html>
 """
 
-    open(f"{REPORT_DIR}/dashboard.html", "w").write(html)
+    with open(REPORT_FILE, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    print("Dashboard generated:", REPORT_FILE)
 
 
 def main():
@@ -124,8 +123,6 @@ def main():
 
     save_history(history)
     generate_dashboard(history)
-
-    print("Dashboard updated")
 
 
 if __name__ == "__main__":
