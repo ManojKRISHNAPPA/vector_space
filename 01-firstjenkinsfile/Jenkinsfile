@@ -4,8 +4,10 @@ pipeline {
     stages{
         stage('my first stage'){
             steps{
-                echo 'Hello WorldZ'
-                dat
+                sh '''
+                    echo "Hello World"
+                    dat
+                '''
             }
         }
         
