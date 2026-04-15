@@ -29,6 +29,7 @@ pipeline {
         stage('python stage'){
             steps{
                 sh '''
+                    cd 01-firstjenkinsfile/
                     python3 test.py
                 '''
             }
