@@ -16,5 +16,14 @@ pipeline {
                 '''
             }
         }
+
+        stage('This is my third stage'){
+            steps{
+                sh '''
+                    date
+                    cal
+                '''
+            }
+        }
     }
 }
