@@ -1,0 +1,20 @@
+pipeline {
+    agent any 
+
+    stages{
+        stage('my first stage'){
+            steps{
+                echo 'Hello World'
+            }
+        }
+        
+        stage('This is my second stage'){
+            steps{
+                sh '''
+                    free -h
+                    whoami
+                '''
+            }
+        }
+    }
+}
